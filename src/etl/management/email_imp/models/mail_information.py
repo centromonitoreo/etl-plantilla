@@ -9,6 +9,7 @@ class TableMailInformation(Base):
     __tablename__ = "mail_information"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    expediente = Column(String(255), nullable=False)
     mail_from = Column(String(255), nullable=False)
     mail_to = Column(String(255), nullable=False)
     mail_copy_to = Column(String(255), nullable=True)

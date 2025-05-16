@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from etl.management.schemas.schemas import FeedDatabase, UpdateDatabase
+from etl.management.schemas.schemas import FeedDatabase # , UpdateDatabase
 
 class ManagementInterface(ABC):
     
@@ -17,11 +17,18 @@ class ManagementInterface(ABC):
         """
         pass
 
+    # @abstractmethod
+    # def update_database(
+    #     self, data: List[UpdateDatabase], **kwargs
+    # ) -> None:
+    #     """
+    #     Esta actualiza el resource dentro de la tabla radicados
+    #     """
+    #     pass
+
     @abstractmethod
-    def update_database(
-        self, data: List[UpdateDatabase], **kwargs
-    ) -> None:
+    def validate_input(self, data: List[FeedDatabase], **kwargs) -> None:
         """
-        Esta actualiza el resource dentro de la tabla radicados
+        Esta funcion valida el input
         """
         pass

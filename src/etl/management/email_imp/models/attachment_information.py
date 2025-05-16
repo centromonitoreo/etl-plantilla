@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, Integer, ForeignKey, JSON
+from sqlalchemy import Column, String, Date, ForeignKey
+from datetime import date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from etl.management.email_imp.config import Base, engine
@@ -10,10 +11,13 @@ class TableAttachmentInformation(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     mail_id = Column(UUID(as_uuid=True), ForeignKey('mail_information.id'), nullable=False)
-    number_attachments = Column(Integer, nullable=False, default=0)
-    attachment_name = Column(JSON, nullable=True)
-    # Hay que crear una variable de donde se almacenan los archivos para leer y luego revisar la estructura dependiendo la extension
-    # attachment_path = Column(JSON, nullable=True)
+    # number_attachments = Column(Integer, nullable=False, default=0)
+    attachment_name = Column(String(255), nullable=True)
+    file_format = Column(String(255), nullable=True)
+    structure = Column(String(255), nullable=True) # Esta creo que deberia ser un enum
+    attachment_path = Column(String(255), nullable=True)
+    create_at = Column(Date, nullable=False, default=date.today())
+    update_at = Column(Date, nullable=True, default=date.today(), onupdate=date.today())
 
     mail = relationship('TableAttachmentInformation', back_populates='attachment')
 

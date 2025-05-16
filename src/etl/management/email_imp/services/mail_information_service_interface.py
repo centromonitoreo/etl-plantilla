@@ -22,9 +22,11 @@ class MailInformationServiceInterface(ABC):
 
     @abstractmethod
     def create_attachment_information(self,
-                                        mail_id: str,
-                                        number_attachments: int,
-                                        attachment_name: list) -> TableAttachmentInformation:
+                                      mail_id: str,
+                                      attachment_name : str,
+                                      file_format : str,
+                                      structure : str,
+                                      attachment_path : str) -> TableAttachmentInformation:
         """
         Create a new attachment information record in the database.
         """
