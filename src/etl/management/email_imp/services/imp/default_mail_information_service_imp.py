@@ -9,16 +9,10 @@ from typing import List
 class TableMailInformationService(MailInformationServiceInterface):
     
     def get_mail_information(self, expediente: str, date_receipt: date, subject: str) -> List[TableMailInformation]:
-        session = SessionManager.get_session()
-        try:
-            return session.query(TableMailInformation).filter(
-                TableMailInformation.expediente == expediente,
-                TableMailInformation.date_receipt == date_receipt,
-                TableMailInformation.subject == subject
-            ).all()
-        finally:
-            session.close()
-
+        return SessionManager().get_session().query(TableMailInformation).filter(TableMailInformation.expediente == expediente,
+                                                                               TableMailInformation.date_receipt == date_receipt,
+                                                                               TableMailInformation.subject == subject).all()
+    
     def create_mail_information(self,
                                 expediente: str,
                                 mail_from: str,
@@ -41,14 +35,11 @@ class TableMailInformationService(MailInformationServiceInterface):
             body=body,
             status=status
         )
-        session = SessionManager.get_session()
-        try:
-            session.add(new_mail_info)
-            session.commit()
-            session.refresh(new_mail_info)
-            return new_mail_info
-        finally:
-            session.close()
+        SessionManager().get_session().add(new_mail_info)
+        SessionManager().get_session().commit()
+        SessionManager().get_session().refresh(new_mail_info)
+        return new_mail_info
+
     
     def create_attachment_information(self,
                                       mail_id: str,
@@ -66,11 +57,8 @@ class TableMailInformationService(MailInformationServiceInterface):
             structure = structure,
             attachment_path = attachment_path
         )
-        session = SessionManager.get_session()
-        try:
-            session.add(new_attachment_info)
-            session.commit()
-            session.refresh(new_attachment_info)
-            return new_attachment_info
-        finally:
-            session.close()
+        
+        SessionManager().get_session().add(new_attachment_info)
+        SessionManager().get_session().commit()
+        SessionManager().get_session().refresh(new_attachment_info)
+        return new_attachment_info

@@ -19,6 +19,6 @@ class TableAttachmentInformation(Base):
     create_at = Column(Date, nullable=False, default=date.today())
     update_at = Column(Date, nullable=True, default=date.today(), onupdate=date.today())
 
-    mail = relationship('TableAttachmentInformation', back_populates='attachment')
+    mail = relationship('TableMailInformation', back_populates='attachment')
 
 Base.metadata.create_all(bind=engine)

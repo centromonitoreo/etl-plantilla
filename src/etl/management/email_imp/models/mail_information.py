@@ -16,7 +16,7 @@ class TableMailInformation(Base):
     date_receipt = Column(Date, nullable=False)
     subject = Column(String(255), nullable=False)
     body = Column(String, nullable=False)
-    status = Column(Integer, default=0)
+    status = Column(String, default=0)
     # Aca deberia tomar el nombre de la empresa o aqui viene el nombre del proyecto o algo asi
     # Tambien fuente de la que proviene, aunque es evidente que es correo por estar en esta estrategia
 

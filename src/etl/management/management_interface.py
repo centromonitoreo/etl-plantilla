@@ -17,15 +17,6 @@ class ManagementInterface(ABC):
         """
         pass
 
-    # @abstractmethod
-    # def update_database(
-    #     self, data: List[UpdateDatabase], **kwargs
-    # ) -> None:
-    #     """
-    #     Esta actualiza el resource dentro de la tabla radicados
-    #     """
-    #     pass
-
     @abstractmethod
     def validate_input(self, data: List[FeedDatabase], **kwargs) -> None:
         """

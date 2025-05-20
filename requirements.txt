@@ -1,3 +1,4 @@
 pydantic
 sqlalchemy
 dotenv
+psycopg2

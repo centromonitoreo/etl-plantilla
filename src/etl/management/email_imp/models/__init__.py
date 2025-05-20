@@ -1,0 +1,2 @@
+from etl.management.email_imp.models.mail_information import TableMailInformation
+from etl.management.email_imp.models.attachment_information import TableAttachmentInformation

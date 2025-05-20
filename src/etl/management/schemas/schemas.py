@@ -9,6 +9,7 @@ from typing import List, Union # Optional
 
 
 class FeedDatabaseMail(BaseModel):
+    expediente: str
     mail_from : str
     mail_to : str
     mail_copy_to : str

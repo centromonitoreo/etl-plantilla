@@ -8,6 +8,7 @@ class MailInformationServiceInterface(ABC):
 
     @abstractmethod
     def create_mail_information(self,
+                                expediente : str,
                                 mail_from : str,
                                 mail_to : str,
                                 mail_copy_to : str,
@@ -33,27 +34,11 @@ class MailInformationServiceInterface(ABC):
         pass
 
     @abstractmethod
-    def update_mail_information(self, mail_info: TableMailInformation) -> None:
-        """
-        Update an existing mail information record in the database.
-        """
-        pass
-
-    @abstractmethod
     def get_mail_information(self, mail_id: str) -> TableMailInformation:
         """
         Retrieve a mail information record by its ID.
         """
         pass
-
-    # @abstractmethod
-    # def delete_mail_information(self, mail_id: str) -> None:
-    #     """
-    #     Delete a mail information record by its ID.
-    #     """
-    #     pass
-
-
 
 
 
