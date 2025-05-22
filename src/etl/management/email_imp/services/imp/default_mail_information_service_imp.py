@@ -11,7 +11,7 @@ class TableMailInformationService(MailInformationServiceInterface):
     def get_mail_information(self, expediente: str, date_receipt: date, subject: str) -> List[TableMailInformation]:
         return SessionManager().get_session().query(TableMailInformation).filter(TableMailInformation.expediente == expediente,
                                                                                TableMailInformation.date_receipt == date_receipt,
-                                                                               TableMailInformation.subject == subject).all()
+                                                                               TableMailInformation.subject == subject).first()
     
     def create_mail_information(self,
                                 expediente: str,
