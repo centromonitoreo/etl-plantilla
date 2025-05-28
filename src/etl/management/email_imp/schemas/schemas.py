@@ -1,5 +1,15 @@
 from pydantic import BaseModel
+from typing import List
 from datetime import date
+
+
+
+class DataBaseAttachment(BaseModel):
+    # mail_id: str
+    attachment_name: str
+    file_format: str
+    structure: str
+    attachment_path: str
 
 
 class DataBaseMail(BaseModel):
@@ -11,16 +21,5 @@ class DataBaseMail(BaseModel):
     subject  : str
     body  : str
     status  : str
+    attachment: List[DataBaseAttachment]
 
-
-class DataBaseAttachment(BaseModel):
-    # mail_id: str
-    attachment_name: str
-    file_format: str
-    structure: str
-    attachment_path: str
-
-
-class FeedDataBaseMail(BaseModel):
-    mail : DataBaseMail
-    attachments: list[DataBaseAttachment] = []
