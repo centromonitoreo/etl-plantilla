@@ -2,3 +2,5 @@ pydantic
 sqlalchemy
 dotenv
 psycopg2
+pandera
+pandera[pandas]

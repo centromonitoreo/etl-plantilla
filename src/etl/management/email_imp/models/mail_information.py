@@ -9,14 +9,14 @@ class TableMailInformation(Base):
     __tablename__ = "mail_information"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    expediente = Column(String(255), nullable=False)
+    expediente = Column(String(255), nullable=True)
     mail_from = Column(String(255), nullable=False)
     mail_to = Column(String(255), nullable=False)
     mail_copy_to = Column(String(255), nullable=True)
     date_receipt = Column(Date, nullable=False)
     subject = Column(String(255), nullable=False)
     body = Column(String, nullable=False)
-    status = Column(String, default=0)
+    status = Column(String, nullable=False)
     # Aca deberia tomar el nombre de la empresa o aqui viene el nombre del proyecto o algo asi
     # Tambien fuente de la que proviene, aunque es evidente que es correo por estar en esta estrategia
 
