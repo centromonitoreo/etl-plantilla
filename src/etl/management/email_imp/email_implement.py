@@ -38,6 +38,8 @@ class EmailImplement(ManagementInterface, default=True):
                 date_receipt=item.date_receipt,
                 subject=item.subject,
                 body=item.body,
+                folder=item.folder,
+                has_attachments=item.has_attachments,
                 status=item.status
             )
 
@@ -48,7 +50,9 @@ class EmailImplement(ManagementInterface, default=True):
                         mail_id=mail_id,
                         attachment_name=att.attachment_name,
                         file_format=att.file_format,
+                        attachment_data=att.attachment_data,
                         structure=att.structure,
+                        label=att.label,
                         attachment_path=att.attachment_path
                     )
 

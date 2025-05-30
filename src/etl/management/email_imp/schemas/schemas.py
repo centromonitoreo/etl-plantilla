@@ -8,7 +8,9 @@ class DataBaseAttachment(BaseModel):
     # mail_id: str
     attachment_name: str
     file_format: str
+    attachment_data: bytes
     structure: str
+    label: str
     attachment_path: str
 
 
@@ -20,6 +22,8 @@ class DataBaseMail(BaseModel):
     date_receipt : date
     subject  : str
     body  : str
+    folder  : str
+    has_attachments: bool
     status  : str
     attachment: List[DataBaseAttachment]
 

@@ -15,6 +15,8 @@ class MailInformationServiceInterface(ABC):
                                 date_receipt : date,
                                 subject : str,
                                 body: str,
+                                folder : str,
+                                has_attachments : bool,
                                 status : str) -> TableMailInformation:
         """
         Create a new mail information record in the database.
@@ -26,7 +28,9 @@ class MailInformationServiceInterface(ABC):
                                       mail_id: str,
                                       attachment_name : str,
                                       file_format : str,
+                                      attachment_data : bytes,
                                       structure : str,
+                                      label : str,
                                       attachment_path : str) -> TableAttachmentInformation:
         """
         Create a new attachment information record in the database.

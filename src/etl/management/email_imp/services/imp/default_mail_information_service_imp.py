@@ -21,6 +21,8 @@ class TableMailInformationService(MailInformationServiceInterface):
                                 date_receipt: str,
                                 subject: str,
                                 body: str,
+                                folder: str,
+                                has_attachments: bool,
                                 status: int) -> TableMailInformation:
         """
         Create a new mail information record in the database.
@@ -33,6 +35,8 @@ class TableMailInformationService(MailInformationServiceInterface):
             date_receipt=date_receipt,
             subject=subject,
             body=body,
+            folder=folder,
+            has_attachments=has_attachments,
             status=status
         )
         SessionManager().get_session().add(new_mail_info)
@@ -45,7 +49,9 @@ class TableMailInformationService(MailInformationServiceInterface):
                                       mail_id: str,
                                       attachment_name : str,
                                       file_format : str,
+                                      attachment_data : bytes,
                                       structure : str,
+                                      label : str,
                                       attachment_path : str) -> TableAttachmentInformation:
         """
         Create a new attachment information record in the database.
@@ -54,7 +60,9 @@ class TableMailInformationService(MailInformationServiceInterface):
             mail_id = mail_id,
             attachment_name = attachment_name,
             file_format = file_format,
+            attachment_data = attachment_data,
             structure = structure,
+            label = label,
             attachment_path = attachment_path
         )
         
