@@ -19,7 +19,7 @@ class TableMailInformation(Base):
     body = Column(String, nullable=False)
     folder = Column(String(255), nullable=False)
     has_attachments = Column(String(255), nullable=False)  # 1 for True, 0 for False
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=True)
     # Aca deberia tomar el nombre de la empresa o aqui viene el nombre del proyecto o algo asi
     # Tambien fuente de la que proviene, aunque es evidente que es correo por estar en esta estrategia
 

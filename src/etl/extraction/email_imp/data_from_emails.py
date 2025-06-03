@@ -4,21 +4,30 @@ from outlook_manager import OutlookMailManager
 from outlook_manager.models import MailQueryParams
 import asyncio
 from pathlib import Path
+from etl.extraction.email_imp.config import FOLDERS_EMAIL, EXCLUDED_EXTS
+from etl.management.email_imp.schemas.schemas import DataBaseMail, DataBaseAttachment
+from datetime import datetime
 
-
-EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
-EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 class DataExtractionEmails(DataExtractionInterface):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.username = EMAIL_USERNAME
-        self.password = EMAIL_PASSWORD
+        if not hasattr(self, 'username') or not hasattr(self, 'password'):
+            self.username = os.getenv("EMAIL_USERNAME")
+            self.password = os.getenv("EMAIL_PASSWORD")
+            if not self.username or not self.password:
+                raise ValueError("EMAIL_USERNAME and EMAIL_PASSWORD environment variables must be set.")
+  
 
-    def read_data(self, start_date=None, end_date=None, top=None) -> list:
+    async def read_data(self, expediente:str = 'UNIDEFINED', folders_name:list = None,start_date=None, end_date=None, top=None) -> list:
         """
         Reads data from emails and returns a list of email data dictionaries.
         """
+        if folders_name is None and FOLDERS_EMAIL is None:
+            raise ValueError("No folders specified for email extraction. Please provide a list of folders or set FOLDERS_EMAIL in the configuration.")
+        if folders_name is None:
+            folders_name = FOLDERS_EMAIL
+
         query_params = MailQueryParams(
             start_date=start_date,
             end_date=end_date,
@@ -28,83 +37,77 @@ class DataExtractionEmails(DataExtractionInterface):
             username=self.username,
             password=self.password
         )
-        excluded_exts = ('.png', '.jpg', '.jpeg', '.gif')
-        loop = asyncio.get_event_loop()
+
         folders = mail_manager.get_folders()
         email_data = []
         for folder in folders:
-            mail_manager.set_folder(folder["id"])
-        mails = mail_manager.get_mails(query_params=query_params.to_query())
+            if folder["childFolderCount"] == 0 and folder["displayName"] in folders_name:
+                print(f"Procesando carpeta: {folder['displayName']}")
+                mail_manager.set_folder(folder["id"])
+                messages = mail_manager.get_mails(query_params=query_params.to_query())
+                email_data.extend(self.get_data_mails(mail_manager, folder["displayName"], expediente, messages))
 
-        for sort_mail in mails:
+            elif folder["childFolderCount"] > 0 and folder["displayName"] in folders_name:
+                child_folders = mail_manager.get_child_folders(folder["id"])
+                
+                for child_folder in child_folders:
+                    mail_manager.set_folder(child_folder["id"])
+                    messages = mail_manager.get_mails(query_params=query_params.to_query())
+                    email_data.extend(self.get_data_mails(mail_manager, os.path.join(folder["displayName"], child_folder["displayName"]), expediente, messages))
 
-            """
-            Garantizar la lista con los diccionarios -> Mi data
-            """
 
-            attachment_name = None
-            file_format = None
-            file_bytes = None
+        return email_data
+        # raise NotImplementedError("This method should be implemented in a subclass.")
 
-            if sort_mail["hasAttachments"] is True:
-                task  = loop.create_task(mail_manager.get_attachments(
+    def get_data_mails(self, mail_manager, folder, expediente, messages):
+        """
+        Processes the messages from a specific folder and returns a list of email data dictionaries.
+        """
+        email_data=[]
+        for sort_mail in messages:
+            email_info = DataBaseMail(
+                    expediente=expediente,
+                    mail_from=sort_mail["from"]["emailAddress"]["address"],
+                    mail_to=[recipient["emailAddress"]["address"] for recipient in sort_mail["toRecipients"]],
+                    mail_copy_to=[r["emailAddress"]["address"] for r in sort_mail.get("ccRecipients", [])],
+                    date_receipt=datetime.fromisoformat(sort_mail["receivedDateTime"].replace("Z", "+00:00")),
+                    subject=sort_mail.get("subject", "(Sin asunto)"),
+                    body=sort_mail.get("bodyPreview", "(Sin cuerpo)"),
+                    folder=folder,
+                    has_attachments=sort_mail["hasAttachments"],
+                    status=None,
+                    attachment=[]
+                )
+
+            if sort_mail["hasAttachments"]:
+
+                loop = asyncio.get_event_loop()
+                tasks = []
+                tasks.append(loop.create_task(mail_manager.get_attachments(
                     message_id=sort_mail["id"],
                     name_filter=None
-                ))
-
-                completed_tasks, _ = loop.run_until_complete(asyncio.wait([task]))
-                
+                )))
+                if tasks:
+                    completed_tasks, _ = loop.run_until_complete(asyncio.wait(tasks))
                 for completed in completed_tasks:
                     results = completed.result()
                     filtered = [
                         (nombre, file_bytes)
                         for (_, nombre, file_bytes) in results
-                        if not nombre.lower().endswith(excluded_exts)
+                        if not nombre.lower().endswith(EXCLUDED_EXTS)
                     ]
 
-                    if filtered:
-                        attachment_name, file_bytes = filtered[0]
+                    for attachment_name, file_bytes in filtered:
                         file_format = Path(attachment_name).suffix[1:]
-                
-                email_data.append({
-                    "expediente": None,
-                    "mail_from": sort_mail["from"]["emailAddress"]["address"],
-                    "mail_to": [recipient["emailAddress"]["address"] for recipient in sort_mail["toRecipients"]],
-                    "mail_copy_to": [r["emailAddress"]["address"] for r in sort_mail.get("ccRecipients", [])],
-                    "date_receipt": sort_mail["receivedDateTime"],
-                    "subject": sort_mail.get("subject", "(Sin asunto)"),
-                    "body": sort_mail.get("bodyPreview", "(Sin cuerpo)"),
-                    "folder": folder["displayName"],
-                    "has_attachments": sort_mail["hasAttachments"],
-                    "status": None,
-                    "attachment_name": attachment_name,
-                    "file_format": file_format,
-                    "attachment_data": file_bytes,
-                    "structure": None,
-                    "label": None,
-                    "attachment_path": None
-                })
-            
-            elif sort_mail["hasAttachments"] is False:
-                email_data.append({
-                    "expediente": None,
-                    "mail_from": sort_mail["from"]["emailAddress"]["address"],
-                    "mail_to": [recipient["emailAddress"]["address"] for recipient in sort_mail["toRecipients"]],
-                    "mail_copy_to": [r["emailAddress"]["address"] for r in sort_mail.get("ccRecipients", [])],
-                    "date_receipt": sort_mail["receivedDateTime"],
-                    "subject": sort_mail.get("subject", "(Sin asunto)"),
-                    "body": sort_mail.get("bodyPreview", "(Sin cuerpo)"),
-                    "folder": folder["displayName"],
-                    "has_attachments": sort_mail["hasAttachments"],
-                    "status": None,
-                    "attachment_name": None,
-                    "file_format": None,
-                    "attachment_data": None,
-                    "structure": None,
-                    "label": None,
-                    "attachment_path": None
-                })
-        raise NotImplementedError("This method should be implemented in a subclass.")
+                        email_info.attachment.append(DataBaseAttachment(
+                            attachment_name=attachment_name,
+                            file_format=file_format,
+                            attachment_data=file_bytes.read(),
+                        ))
+
+
+            email_data.append(email_info)
+        return email_data
 
     def validate_inputs(self):
         """
