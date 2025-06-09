@@ -6,10 +6,13 @@ import asyncio
 from pathlib import Path
 from etl.extraction.email_imp.config import FOLDERS_EMAIL, EXCLUDED_EXTS
 from etl.management.email_imp.schemas.schemas import DataBaseMail, DataBaseAttachment
+from etl.management.management_interface import ManagementInterface
 from datetime import datetime
 
 
 class DataExtractionEmails(DataExtractionInterface):
+
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not hasattr(self, 'username') or not hasattr(self, 'password'):
@@ -39,13 +42,13 @@ class DataExtractionEmails(DataExtractionInterface):
         )
 
         folders = mail_manager.get_folders()
-        email_data = []
+
         for folder in folders:
             if folder["childFolderCount"] == 0 and folder["displayName"] in folders_name:
                 print(f"Procesando carpeta: {folder['displayName']}")
                 mail_manager.set_folder(folder["id"])
                 messages = mail_manager.get_mails(query_params=query_params.to_query())
-                email_data.extend(self.get_data_mails(mail_manager, folder["displayName"], expediente, messages))
+                self.get_data_mails(mail_manager, folder["displayName"], expediente, messages)
 
             elif folder["childFolderCount"] > 0 and folder["displayName"] in folders_name:
                 child_folders = mail_manager.get_child_folders(folder["id"])
@@ -53,11 +56,8 @@ class DataExtractionEmails(DataExtractionInterface):
                 for child_folder in child_folders:
                     mail_manager.set_folder(child_folder["id"])
                     messages = mail_manager.get_mails(query_params=query_params.to_query())
-                    email_data.extend(self.get_data_mails(mail_manager, os.path.join(folder["displayName"], child_folder["displayName"]), expediente, messages))
+                    self.get_data_mails(mail_manager, os.path.join(folder["displayName"], child_folder["displayName"]), expediente, messages)
 
-
-        return email_data
-        # raise NotImplementedError("This method should be implemented in a subclass.")
 
     def get_data_mails(self, mail_manager, folder, expediente, messages):
         """
@@ -105,9 +105,8 @@ class DataExtractionEmails(DataExtractionInterface):
                             attachment_data=file_bytes.read(),
                         ))
 
+            ManagementInterface.create().feed_database([email_info])
 
-            email_data.append(email_info)
-        return email_data
 
     def validate_inputs(self):
         """

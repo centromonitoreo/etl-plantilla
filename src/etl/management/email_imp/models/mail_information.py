@@ -1,5 +1,6 @@
 import uuid
-from sqlalchemy import Column, String, Date
+from sqlalchemy import Column, String, DateTime
+from datetime import timezone
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -14,15 +15,13 @@ class TableMailInformation(Base):
     mail_from = Column(String(255), nullable=False)
     mail_to = Column(ARRAY(String), nullable=False)
     mail_copy_to = Column(ARRAY(String), nullable=False)
-    date_receipt = Column(Date, nullable=False)
+    date_receipt = Column(DateTime(timezone=True), nullable=False)
     subject = Column(String(255), nullable=False)
     body = Column(String, nullable=False)
     folder = Column(String(255), nullable=False)
-    has_attachments = Column(String(255), nullable=False)  # 1 for True, 0 for False
+    has_attachments = Column(String(255), nullable=False)
     status = Column(String, nullable=True)
-    # Aca deberia tomar el nombre de la empresa o aqui viene el nombre del proyecto o algo asi
-    # Tambien fuente de la que proviene, aunque es evidente que es correo por estar en esta estrategia
 
-    attachment = relationship('TableAttachmentInformation', back_populates='mail')
+    attachments = relationship('TableAttachmentInformation', back_populates='mail')
 
 Base.metadata.create_all(bind=engine)

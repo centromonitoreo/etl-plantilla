@@ -2,16 +2,59 @@ from etl.management.email_imp.services.mail_information_service_interface import
 from etl.management.email_imp.models.mail_information import TableMailInformation
 from etl.management.email_imp.models.attachment_information import TableAttachmentInformation
 from etl.management.email_imp.config import SessionManager
-from datetime import date
-from typing import List
+from sqlalchemy.orm import Session, joinedload, aliased
+from datetime import datetime
+from typing import List, Optional
 
 
 class TableMailInformationService(MailInformationServiceInterface):
     
-    def get_mail_information(self, expediente: str, date_receipt: date, subject: str) -> List[TableMailInformation]:
-        return SessionManager().get_session().query(TableMailInformation).filter(TableMailInformation.expediente == expediente,
-                                                                               TableMailInformation.date_receipt == date_receipt,
-                                                                               TableMailInformation.subject == subject).first()
+    def get_mail_information(
+        self,
+        expediente: Optional[str] = None,
+        date_receipt: Optional[datetime] = None,
+        subject: Optional[str] = None,
+        file_format: Optional[List[str]] = None
+    ) -> List[TableMailInformation]:
+
+        session: Session = SessionManager().get_session()
+
+        # Aliased para la tabla adjuntos
+        Attachment = aliased(TableAttachmentInformation)
+
+        query = session.query(TableMailInformation).join(
+            Attachment,
+            TableMailInformation.id == Attachment.mail_id
+        )
+
+        # Filtros básicos sobre mails
+        if expediente is not None:
+            query = query.filter(TableMailInformation.expediente == expediente)
+        if date_receipt is not None:
+            query = query.filter(TableMailInformation.date_receipt == date_receipt)
+        if subject is not None:
+            query = query.filter(TableMailInformation.subject == subject)
+
+        # Filtro directo sobre adjuntos (si file_format dado)
+        if file_format:
+            if not isinstance(file_format, (list, tuple, set)):
+                file_format = [file_format]
+            query = query.filter(Attachment.file_format.in_(file_format))
+
+        # Evitar mails duplicados (por múltiples adjuntos)
+        query = query.distinct()
+
+        # Opcional: cargar adjuntos con joinedload para no hacer lazy load después
+        query = query.options(joinedload(TableMailInformation.attachments))
+
+        mails = query.all()
+
+        # Finalmente, opcionalmente filtrar adjuntos en Python para que solo queden los que cumplen file_format
+        if file_format:
+            for mail in mails:
+                mail.attachments = [att for att in mail.attachments if att.file_format in file_format]
+
+        return mails
     
     def create_mail_information(self,
                                 expediente: str,
