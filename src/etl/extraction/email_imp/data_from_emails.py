@@ -44,19 +44,19 @@ class DataExtractionEmails(DataExtractionInterface):
         folders = mail_manager.get_folders()
 
         for folder in folders:
-            if folder["childFolderCount"] == 0 and folder["displayName"] in folders_name:
-                print(f"Procesando carpeta: {folder['displayName']}")
+            if folder["displayName"] in folders_name:
+                print(f"Processing folder: {folder['displayName']}")
                 mail_manager.set_folder(folder["id"])
                 messages = mail_manager.get_mails(query_params=query_params.to_query())
                 self.get_data_mails(mail_manager, folder["displayName"], expediente, messages)
 
-            elif folder["childFolderCount"] > 0 and folder["displayName"] in folders_name:
-                child_folders = mail_manager.get_child_folders(folder["id"])
+            # elif folder["childFolderCount"] > 0 and folder["displayName"] in folders_name:
+            #     child_folders = mail_manager.get_child_folders(folder["id"])
                 
-                for child_folder in child_folders:
-                    mail_manager.set_folder(child_folder["id"])
-                    messages = mail_manager.get_mails(query_params=query_params.to_query())
-                    self.get_data_mails(mail_manager, os.path.join(folder["displayName"], child_folder["displayName"]), expediente, messages)
+            #     for child_folder in child_folders:
+            #         mail_manager.set_folder(child_folder["id"])
+            #         messages = mail_manager.get_mails(query_params=query_params.to_query())
+            #         self.get_data_mails(mail_manager, os.path.join(folder["displayName"], child_folder["displayName"]), expediente, messages)
 
 
     def get_data_mails(self, mail_manager, folder, expediente, messages):
@@ -114,3 +114,4 @@ class DataExtractionEmails(DataExtractionInterface):
         """
         if not self.username or not self.password:
             raise ValueError("Username and password must be provided.")
+    
